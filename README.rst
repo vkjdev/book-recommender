@@ -6,6 +6,7 @@ project is to design, implement and evaluate recommender systems for online book
 
 DEVELOPMENT
 ===========
+
 Install package for developement:
 
 .. code-block:: shell
@@ -23,6 +24,14 @@ Run tests:
 .. code-block:: shell
 
     py.test
+
+Commit:
+
+.. code-block:: shell
+
+    git pull
+    git commit -am 'commit message'
+    git push
 
 
 
