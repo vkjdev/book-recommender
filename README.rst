@@ -6,11 +6,13 @@ project is to design, implement and evaluate Recommender system for online book 
 Dataset
 -------
 
-.. _Dataset analysis: https://github.com/matejkvassay/book-recommender/blob/master/ipython_notebooks/data_analysis.ipynb
+Dataset analysis:
+https://github.com/matejkvassay/book-recommender/blob/master/ipython_notebooks/data_analysis.ipynb
 
+Download CSV dump:
 http://www2.informatik.uni-freiburg.de/~cziegler/BX/
 
-Download .csv dump and set paths to csv files in config.yml.
+After download set paths to csv files in config.yml.
 
 
 DEVELOPMENT
