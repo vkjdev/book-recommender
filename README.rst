@@ -1,7 +1,30 @@
 BOOK RECOMMENDER
 ================
-This projects
+This is school project for Recommender Systems course on Masaryk University, Faculty of Informatics. The goal of this
+project is to design, implement and evaluate recommender systems for online book store.
 
 
 DEVELOPMENT
 ===========
+Install package for developement:
+
+.. code-block:: shell
+
+    python setup.py develop
+
+Install package for production:
+
+.. code-block:: shell
+
+    python setup.py install
+
+Run tests:
+
+.. code-block:: shell
+
+    py.test
+
+
+
+
+
