@@ -6,6 +6,9 @@ from setuptools import setup, find_packages
 with codecs_open('README.rst', encoding='utf-8') as f:
     long_description = f.read()
 
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
 
 setup(name='book-recommender',
       version='0.0.1',
@@ -20,15 +23,7 @@ setup(name='book-recommender',
       packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
       include_package_data=True,
       zip_safe=False,
-      install_requires=[
-            'pip',
-            'numpy',
-            'scipy',
-            'scikit-learn',
-            'gensim',
-            'pandas',
-            'PyYAML'
-      ],
+      install_requires=required,
       extras_require={
           'test': ['pytest'],
       },

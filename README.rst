@@ -3,9 +3,20 @@ BOOK RECOMMENDER
 This is school project for Recommender Systems course on Masaryk University, Faculty of Informatics. The goal of this
 project is to design, implement and evaluate Recommender system for online book store.
 
+Dataset
+-------
+
+http://www2.informatik.uni-freiburg.de/~cziegler/BX/
+
+Download .csv dump and set paths to csv files in config.yml.
 
 DEVELOPMENT
 ===========
+
+Install requirements manually if needed:
+
+.. code-block:: shell
+    pip install -r requirements.txt
 
 Install package for developement:
 
@@ -33,7 +44,16 @@ Commit:
     git commit -am 'commit message'
     git push
 
+IPYTHON NOTEBOOKS
+=================
 
+http://jupyter.org
+
+Run notebooks in browser:
+
+.. code-block:: shell
+
+    ipython notebook
 
 
 
