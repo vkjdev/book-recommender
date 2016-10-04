@@ -1,1 +1,6 @@
-data_access:
+recommender:
+    dataset:
+        dataset_folder_path: '/Users/Work/Documents/Skola/recommender_systems/data/'
+        users_file_name: 'BX-Users.csv'
+        books_file_name: 'BX-Books.csv'
+        book_ratings_file_name: 'BX-Book-Ratings.csv'

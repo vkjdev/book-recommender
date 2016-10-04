@@ -53,7 +53,7 @@ Run notebooks in browser:
 
 .. code-block:: shell
 
-    ipython notebook
+    jupyter notebook
 
 
 
