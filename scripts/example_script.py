@@ -1,0 +1,1 @@
+print('This is script example run me with python ./example_script.py')
