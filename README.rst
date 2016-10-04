@@ -21,6 +21,7 @@ DEVELOPMENT
 Install requirements manually if needed:
 
 .. code-block:: shell
+
     pip install -r requirements.txt
 
 Install package for developement:
