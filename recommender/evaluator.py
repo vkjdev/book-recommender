@@ -9,14 +9,12 @@ import pandas as pd
 import numpy as np
 from dummy_recommender import MeanRatingRecommender as Recommmender
 
-tested_recommender = Recommmender()
-
-SAMPLED_USERS = 10000
+SAMPLED_USERS = 100
 
 # slices to use for testing methods improvements on increasing amount of testing data
 SLICING_INTERVAL = 5
 
-method_name = tested_recommender.__module__
+method_name = Recommmender.__module__
 
 # logging init:
 logger = logging.getLogger()
@@ -39,7 +37,9 @@ logger.info("Testing recommender implementation of %s " % method_name)
 with open(data_file, "r") as f:
 
     df = pd.read_csv(data_file)
-    eval_users = np.random.choice(df["user"].unique(), SAMPLED_USERS)
+    grouped_users = df.groupby(["user"]).count()
+    n_review_users = grouped_users[grouped_users["item"] >= SLICING_INTERVAL]["item"].keys()
+    eval_users = np.random.choice(n_review_users.unique(), SAMPLED_USERS)
     logger.info("Selected %s users to evaluate their ratings" % eval_users.__len__())
 
     eval_dataframe = df[df['user'].isin(eval_users)]
@@ -47,20 +47,17 @@ with open(data_file, "r") as f:
                 (eval_users.__len__(), eval_dataframe.__len__()))
 
     for eval_run in range(1, SLICING_INTERVAL):
+        # each test run starts with clean recommender instance
+        tested_recommender = Recommmender()
 
         training_frame = pd.DataFrame(columns=["user", "item", "rating", "timestamp"])
         testing_frame = pd.DataFrame(columns=["user", "item", "rating", "timestamp"])
 
         quantile = eval_run*(1/float(SLICING_INTERVAL))
-        logger.info("training on users dataset quantile %s" % quantile)
-        invalid_users = 0
+        logger.info("training on users dataset divides on quantile %s" % quantile)
 
         for user in eval_users:
             user_reviews = eval_dataframe[eval_dataframe['user'] == user]
-            if user_reviews.__len__() < SLICING_INTERVAL:
-                # skip the user if they have less than SLICING_INTERVAL reviews
-                invalid_users += 1
-                continue
 
             # value dividing reviews of a user to training and testing
             slicing_timestamp = user_reviews["timestamp"].quantile(q=quantile)
@@ -71,8 +68,6 @@ with open(data_file, "r") as f:
             testing_user_data = user_reviews[user_reviews["timestamp"] >= slicing_timestamp]
             testing_frame = testing_frame.append(testing_user_data)
 
-        logger.info("taken reviews of %s users having >= than %s reviews" %
-                    (SAMPLED_USERS-invalid_users, SLICING_INTERVAL))
         logger.info("training dataframe size: %s" % training_frame.__len__())
         logger.info("testing dataframe size: %s" % testing_frame.__len__())
 
