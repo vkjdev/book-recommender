@@ -17,7 +17,9 @@ def _recall(searched_items, retrieved_items):
 
 class KnnRecommender:
 
-    user_metadata = dict()
+    user_mean = dict()
+    item_mean = dict()
+
     sorted_user_vector = list()
     sorted_book_vector = list()
     user_item_matrix = None
@@ -35,12 +37,15 @@ class KnnRecommender:
         self.sorted_user_vector = np.sort(raw_data["user"].unique())
         self.sorted_book_vector = np.sort(raw_data["item"].unique())
 
+        for item in self.sorted_book_vector:
+            self.item_mean[item] = raw_data[raw_data["item"] == item]["rating"].mean()
+
         self.user_item_matrix = np.zeros(shape=(len(self.sorted_user_vector), len(self.sorted_book_vector)))
 
         user_iter = 0
         for user in self.sorted_user_vector:
             user_entries = raw_data[raw_data["user"] == user]
-            self.user_metadata[user] = user_entries["rating"].mean()
+            self.user_mean[user] = user_entries["rating"].mean()
             user_entries["norm_rating"] = _normalize_user_ratings(user_entries["rating"])
 
             user_items = np.sort(user_entries["item"].unique())
@@ -79,27 +84,24 @@ class KnnRecommender:
                 correlated_percentile = np.percentile(item_similarity, q=80)
                 correlated_items = np.where(item_similarity >= correlated_percentile)[0]
 
-                norm_result = _recall(user_positive_ratings, correlated_items)*self.user_metadata[user]
-                norm_result = math.ceil(norm_result)
+                norm_result = (float(self.user_mean[user])/2) + \
+                              (_recall(user_positive_ratings, correlated_items)*self.user_mean[user]/2)
+                norm_result = math.floor(norm_result)
 
             else:
                 # no item seen before
                 # compute user's mean rating and return that
-                user_mean = self.user_metadata[user]
+                user_mean = self.user_mean[user]
 
                 norm_result = math.ceil(user_mean)
         else:
             if item in self.sorted_book_vector:
                 # no user seen before
-                item_user_matrix = np.transpose(self.user_item_matrix)
 
-                item_data = item_user_matrix[self.sorted_book_vector.tolist().index(item)]
-                notnull_item_data = item_data[np.nonzero(item_data)]
-
-                norm_result = math.ceil(notnull_item_data.mean()-50)
+                norm_result = math.ceil(self.item_mean[item])
             else:
-                # no information previously seen
-                norm_result = np.mean(self.user_metadata.values())
+                # no information previously seen - use mean of all users
+                norm_result = math.ceil(np.mean(self.item_mean.values()))
 
         return norm_result
 

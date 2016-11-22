@@ -8,11 +8,18 @@ import math
 import pandas as pd
 import numpy as np
 from dummy_recommender import MeanRatingRecommender as Recommmender
+# from knn_recommender_v2 import KnnRecommender as Recommmender
 
-SAMPLED_USERS = 100
+SAMPLED_USERS = 1000
+USER_IS_ROBOT_THRESHOLD = 1000
 
 # slices to use for testing methods improvements on increasing amount of testing data
 SLICING_INTERVAL = 5
+
+# select how many times the evaluation will split data and test
+# selecting 1 means one split with fold on SLICING_INTERVAL-1/SLICING_INTERVAL timestamp for every user
+# can automatically test a development of model performance on increasing amount of training data
+SLICING_RUNS = 1
 
 method_name = Recommmender.__module__
 
@@ -46,7 +53,7 @@ with open(data_file, "r") as f:
     logger.info("Selected dataframe of random %s users containing %s entries" %
                 (eval_users.__len__(), eval_dataframe.__len__()))
 
-    for eval_run in range(1, SLICING_INTERVAL):
+    for eval_run in range(SLICING_INTERVAL-SLICING_RUNS, SLICING_INTERVAL):
         # each test run starts with clean recommender instance
         tested_recommender = Recommmender()
 
@@ -56,8 +63,14 @@ with open(data_file, "r") as f:
         quantile = eval_run*(1/float(SLICING_INTERVAL))
         logger.info("training on users dataset divides on quantile %s" % quantile)
 
+        # TODO: later compare recommender results with using dataset having only data newer than from 2013
+
         for user in eval_users:
             user_reviews = eval_dataframe[eval_dataframe['user'] == user]
+
+            if len(user_reviews) >= USER_IS_ROBOT_THRESHOLD:
+                # do not include users having more than threshold ratings
+                continue
 
             # value dividing reviews of a user to training and testing
             slicing_timestamp = user_reviews["timestamp"].quantile(q=quantile)
@@ -71,7 +84,7 @@ with open(data_file, "r") as f:
         logger.info("training dataframe size: %s" % training_frame.__len__())
         logger.info("testing dataframe size: %s" % testing_frame.__len__())
 
-        # TODO: passing pandas dataframe, or raw data?
+        # TODO: choose to train on pandas dataframe, or raw csv
         # tested_recommender.fit(training_frame.to_csv())
         tested_recommender.fit(training_frame)
         logger.info("Recommender method has fit on %s entries" % training_frame.__len__())
@@ -81,6 +94,10 @@ with open(data_file, "r") as f:
         for index, entry in testing_frame.iterrows():
             expected_score = entry["rating"]
             actual_score = tested_recommender.predict(entry["user"], entry["item"])
+
+            # TODO: remove for no output of matching
+            logger.info("expected - actual: %s - %s" % (expected_score, actual_score))
+
             delta_sum += math.fabs(expected_score-actual_score)
 
         logger.info("Recommender method has predicted %s ratings" % testing_frame.__len__())
