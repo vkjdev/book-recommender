@@ -12,7 +12,7 @@ import numpy as np
 from doc2vec_recommender import Doc2VecRecommender as Recommender
 
 # DATA_FILE_PATH="/home/michal/Documents/Misc/recommenders/vcs/book-recommender/data/ratings_Books.csv"
-DATA_FILE_PATH = '/home/kvassay/data/book-recommender/ratings_Books_100K.csv'
+DATA_FILE_PATH = '/home/kvassay/data/book-recommender/ratings_Books_100.csv'
 
 SAMPLED_USERS = 1000
 USER_IS_ROBOT_THRESHOLD = 1000
@@ -48,7 +48,6 @@ logger.info("Testing recommender implementation of %s " % method_name)
 with open(data_file, "r") as f:
     df = pd.read_csv(data_file, names=["user", "item", "rating", "timestamp"])
 
-    logger.info('First row of csv: %s', df.head(1))
     grouped_users = df.groupby(["user"]).count()
     n_review_users = grouped_users[grouped_users["item"] >= SLICING_INTERVAL]["item"].keys()
     eval_users = np.random.choice(n_review_users.unique(), SAMPLED_USERS)
@@ -109,7 +108,8 @@ with open(data_file, "r") as f:
             else:
                 len_diff += 1
 
-        logger.info("Recommender method has predicted %s ratings" % testing_frame.__len__())
+        logger.info("Recommender method has predicted %s ratings" % (testing_frame.__len__()-len_diff))
+        logger.info('Recommender failed to predict %s ratings', len_diff)
 
         delta = float(delta_sum) / (testing_frame.__len__() - len_diff)
         mean_rating = float(testing_frame["rating"].mean())
