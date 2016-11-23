@@ -9,7 +9,9 @@ from math import sqrt
 import pandas as pd
 import numpy as np
 from sklearn.metrics import f1_score, accuracy_score,precision_score
-from doc2vec_recommender import Doc2VecRecommender as Recommender
+# from dummy_recommender import MeanRatingRecommender as Recommender
+from knn_recommender_v2 import KnnRecommender as Recommender
+#mfrom doc2vec_recommender import Doc2VecRecommender as Recommender
 
 # DATA_FILE_PATH="/home/michal/Documents/Misc/recommenders/vcs/book-recommender/data/ratings_Books.csv"
 DATA_FILE_PATH = '/home/kvassay/data/book-recommender/ratings_Books.csv'
