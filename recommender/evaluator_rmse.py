@@ -4,7 +4,8 @@
 # might be used to evaluate how the method improves on increasing volume on testing dataset
 
 import logging
-import math
+from sklearn.metrics import mean_squared_error
+from math import sqrt
 import pandas as pd
 import numpy as np
 # from dummy_recommender import MeanRatingRecommender as Recommender
@@ -15,7 +16,7 @@ from doc2vec_recommender import Doc2VecRecommender as Recommender
 DATA_FILE_PATH = '/home/kvassay/data/book-recommender/ratings_Books.csv'
 
 SAMPLED_USERS = 1000
-USER_IS_ROBOT_THRESHOLD = 1000
+USER_IS_ROBOT_THRESHOLD = 100
 
 # slices to use for testing methods improvements on increasing amount of testing data
 SLICING_INTERVAL = 5
@@ -94,7 +95,8 @@ with open(data_file, "r") as f:
         logger.info("Recommender method has fit on %s entries" % training_frame.__len__())
 
         # aggregated difference of recommender predicted rating against the real rating
-        delta_sum = 0
+        y_true=list()
+        y_pred=list()
         len_diff = 0
         for index, entry in testing_frame.iterrows():
             expected_score = entry["rating"]
@@ -104,17 +106,18 @@ with open(data_file, "r") as f:
             logger.info("expected - actual: %s - %s" % (expected_score, actual_score))
 
             if actual_score is not None:
-                delta_sum += math.fabs(expected_score - actual_score)
+                y_true.append(expected_score)
+                y_pred.append(actual_score)
             else:
                 len_diff += 1
 
         logger.info("Recommender method has predicted %s ratings" % (testing_frame.__len__()-len_diff))
         logger.info('Recommender failed to predict %s ratings', len_diff)
 
-        delta = float(delta_sum) / (testing_frame.__len__() - len_diff)
+        rmse = sqrt(mean_squared_error(y_true, y_pred))
         mean_rating = float(testing_frame["rating"].mean())
 
         logger.info("Testing data mean rating: %s" % mean_rating)
         logger.info("")
-        logger.info("Method %s average error delta %s" % (method_name, delta))
+        logger.info("Method %s RMSE: %s" % (method_name, rmse))
         logger.info("")
