@@ -1,1 +1,2 @@
 
+from recommender.doc2vec_recommender import Doc2VecRecommender
