@@ -3,15 +3,17 @@ from gensim.models.doc2vec import Doc2Vec
 from gensim.models.doc2vec import TaggedDocument
 import logging
 import time
+import numpy as np
 
 logger = logging.getLogger()
 
 
 class Doc2VecRecommender():
-    def __init__(self):
+    def __init__(self,cfg):
         logger.info('Initializing Doc2Vec Recommender...')
         self.model = None
         self.user_items_dict = None
+        self.cfg=cfg
 
     @staticmethod
     def get_user_items_dict(data, min_ratings, max_ratings):
@@ -38,13 +40,27 @@ class Doc2VecRecommender():
     def get_user_items_list_lengths(user_item_dict):
         return pd.DataFrame(sorted([len(item_list) for _, item_list in user_item_dict.iteritems()]))
 
+    def train_default(self, train_data):
+        self.model = Doc2Vec(train_data, dm=0, size=30, window=8, min_count=1, workers=4)
+
+    def train_custom(self, train_data, n_epochs):
+        self.model = Doc2Vec(alpha=self.cfg['alpha'], min_alpha=self.cfg['min_alpha'], dm=self.cfg['dm'], size=self.cfg['size'], window=self.cfg['window'], min_count=self.cfg['min_count'], workers=4)  # use fixed learning rate
+        self.model.build_vocab(train_data)
+        for epoch in range(n_epochs):
+            np.random.shuffle(train_data)
+            logger.info('Training epoch number %s...', epoch+1)
+            self.model.train(train_data)
+            self.model.alpha -= 0.002  # decrease the learning rate
+            self.model.min_alpha = self.model.alpha  # fix the learning rate, no decay
+
     def fit(self, raw_data):
         self.user_items_dict = Doc2VecRecommender.get_user_items_dict(raw_data, min_ratings=3, max_ratings=100)
         logger.info('Transforming training data rows to Tagged Documents for Gensim...')
         train_data = [TaggedDocument(words, [user_id]) for user_id, words in self.user_items_dict.iteritems()]
         logger.info('Training Doc2Vec model on %s examples.', len(train_data))
         start = time.time()
-        self.model = Doc2Vec(train_data, dm=0, size=30, window=8, min_count=1, workers=4)
+        np.random.shuffle(train_data)
+        self.train_custom(train_data,self.cfg['num_epochs'])
         dur = time.time() - start
         logger.info('Training finished with duration: %ss...', dur)
 

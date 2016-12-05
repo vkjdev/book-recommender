@@ -1,1 +1,3 @@
 
+from recommender.doc2vec_recommender import Doc2VecRecommender
+from recommender.dummy_recommender import MeanRatingRecommender

@@ -9,14 +9,14 @@ from math import sqrt
 import pandas as pd
 import numpy as np
 from sklearn.metrics import f1_score, accuracy_score,precision_score
-# from dummy_recommender import MeanRatingRecommender as Recommender
-from knn_recommender_v2 import KnnRecommender as Recommender
-#mfrom doc2vec_recommender import Doc2VecRecommender as Recommender
+#from dummy_recommender import MeanRatingRecommender as Recommender
+#from knn_recommender_v2 import KnnRecommender as Recommender
+from doc2vec_recommender import Doc2VecRecommender as Recommender
 
 # DATA_FILE_PATH="/home/michal/Documents/Misc/recommenders/vcs/book-recommender/data/ratings_Books.csv"
-DATA_FILE_PATH = '/home/kvassay/data/book-recommender/ratings_Books.csv'
+DATA_FILE_PATH = '/home/kvassay/data/book-recommender/ratings_Books_100K.csv'
 
-SAMPLED_USERS = 1000
+SAMPLED_USERS = 1000000
 USER_IS_ROBOT_THRESHOLD = 100
 
 # slices to use for testing methods improvements on increasing amount of testing data
@@ -50,7 +50,8 @@ logger.info("Testing recommender implementation of %s " % method_name)
 def like(rating):
     if rating>3:
         return 1
-    return 0
+    else:
+        return 0
 
 with open(data_file, "r") as f:
     df = pd.read_csv(data_file, names=["user", "item", "rating", "timestamp"])
