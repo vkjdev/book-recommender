@@ -1,3 +1,6 @@
+import math
+
+
 class MeanRatingRecommender:
 
     mean = 0
@@ -14,4 +17,4 @@ class MeanRatingRecommender:
     # will return predicted rating which is the only attribute to be used for performance evaluation
     def predict(self, user, item):
 
-        return self.mean
+        return math.floor(self.mean)
