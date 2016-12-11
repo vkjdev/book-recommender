@@ -151,7 +151,7 @@ class Evaluator:
         recall = self.recall(y_true, y_pred)
         return (1+(f**2))*(float(precision*recall)/((f**2*precision)+recall))
 
-    def predict(self, tested_recommender):
+    def predict(self, tested_recommender, tested_volume=None):
         logger.info("Starting testing - gathering recommender predictions")
 
         self.y_true = list()
@@ -159,12 +159,17 @@ class Evaluator:
 
         len_diff = 0
         delta_sum = 0
+
+        if tested_volume:
+            self.testing_frame = self.testing_frame[:tested_volume]
+            logger.info("Testing will be made on %s ratings" % tested_volume)
+
         for index, entry in self.testing_frame.iterrows():
             expected_score = entry["rating"]
             actual_score = tested_recommender.predict(entry["user"], entry["item"])
 
             # TODO: comment/uncomment for no output of matching
-            # logger.info("expected - actual: %s - %s" % (expected_score, actual_score))
+            logger.info("expected - actual: %s - %s" % (expected_score, actual_score))
 
             if actual_score is not None:
                 delta_sum += math.fabs(expected_score - actual_score)
@@ -182,7 +187,7 @@ class Evaluator:
     # expects initialized Recommender class containing fit and predict methods
     # evaluates the results of the Recommender using the selected method
     # implemeted methods: MAE, RMSE, PRECISION, RECALL, F1
-    def evaluate(self, recommender, pickled_train_filepath=None, pickled_test_filepath=None, all_data_filepath=None):
+    def evaluate(self, recommender, pickled_train_filepath=None, pickled_test_filepath=None, all_data_filepath=None, tested_volume=None):
         """
         main method for simple evaluation
         expects initialized Recommender class containing fit and predict methods
@@ -209,7 +214,7 @@ class Evaluator:
         logger.info("Starting recommender fit")
         recommender.fit(self.training_frame)
         logger.info("Recommender has fit")
-        score = self.predict(recommender)
+        score = self.predict(recommender, tested_volume=tested_volume)
         logger.info("Recommender scores: %s" % score)
         return score
 
