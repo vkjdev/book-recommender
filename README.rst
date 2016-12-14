@@ -3,9 +3,14 @@ BOOK RECOMMENDER
 This is school project for Recommender Systems course on Masaryk University, Faculty of Informatics. The goal of this
 project is to design, implement and evaluate Recommender system for online book store.
 
+CODE
+====
+In /ipython_notebooks/item2vec* is implemented and evaluted Item2Vec recommender.
+
+
 Dataset
 -------
-
+Amazon book Ratings.csv
 
 DEVELOPMENT
 ===========
