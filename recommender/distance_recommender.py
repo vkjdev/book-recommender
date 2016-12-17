@@ -1,5 +1,4 @@
 import scipy
-from pandas import DataFrame
 import numpy as np
 from sklearn.neighbors import NearestNeighbors
 from sklearn.metrics.pairwise import euclidean_distances
@@ -74,7 +73,7 @@ class UserDistanceRecommender:
 
             user_iter += 1
 
-            logger.info("%s/%s users processed" % (user_iter, len(unique_users)))
+            # logger.info("%s/%s users processed" % (user_iter, len(unique_users)))
 
         # print training_struct.describe()
         self.distance_model.fit(self.user_item_matrix)
@@ -84,20 +83,39 @@ class UserDistanceRecommender:
     # expects one entry's user and item
     # will return predicted rating which is the only attribute to be used for performance evaluation
     def predict(self, user, item):
-        item_index = self.sorted_book_vector.searchsorted(item)
-        user_index = self.sorted_user_vector.searchsorted(user)
+        try:
+            item_index = self.sorted_book_vector.tolist().index(item)
+        except KeyError:
+            try:
+                user_index = self.sorted_user_vector.tolist().index(user)
+                user_mean = self.user_item_matrix[user_index].mean()
+                return math.floor(user_mean)
+
+            except KeyError:
+                # no item, no user seen before
+                # returns overall mean
+                overall_mean = self.user_item_matrix[np.nonzero(self.user_item_matrix)].mean()
+                return math.floor(overall_mean)
+
+        try:
+            user_index = self.sorted_user_vector.tolist().index(user)
+        except KeyError:
+            try:
+                item_index = self.sorted_book_vector.tolist().index(item)
+                item_mean = self.user_item_matrix[:, item_index].mean()
+                return math.floor(item_mean)
+
+            except KeyError:
+                # no item, no user seen before
+                # returns overall mean
+                overall_mean = self.user_item_matrix[np.nonzero(self.user_item_matrix)].mean()
+                return math.floor(overall_mean)
+
         user_rating_vector = self.user_item_matrix[user_index]
         user_rating_vector[np.nonzero(user_rating_vector)] = _normalize_user_ratings(user_rating_vector[np.nonzero(user_rating_vector)])
         transposed_matrix = self.user_item_matrix.transpose()
         # find users that rated the current book and predict the rating of the closest as in euclidean space
-        try:
-            users_rated_item_ratings_indices = np.nonzero(transposed_matrix[item_index][0].data)[0]
-        except IndexError:
-            logger.warn("Item %s not seen before" % item)
-            # item not seen in training set
-            # giving overall mean
-            overall_mean = self.user_item_matrix[np.nonzero(self.user_item_matrix)].mean()
-            return math.floor(overall_mean)
+        users_rated_item_ratings_indices = np.nonzero(transposed_matrix[item_index][0].data)[0]
 
         current_min_distance = np.inf
         current_best_vector = None

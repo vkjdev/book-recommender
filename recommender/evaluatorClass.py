@@ -12,16 +12,6 @@ from dummy_recommender import MeanRatingRecommender as Recommender
 # from knn_recommender_v2 import KnnRecommender as Recommender
 # from doc2vec_recommender import Doc2VecRecommender as Recommender
 
-# slices to use for testing methods improvements on increasing amount of testing data
-# NOT SUPPORTED
-# SLICING_INTERVAL = 5
-
-# select how many times the evaluation will split data and test
-# selecting 1 means one split with fold on SLICING_INTERVAL-1/SLICING_INTERVAL timestamp for every user
-# can automatically test a development of model performance on increasing amount of training data
-# NOT SUPPORTED
-# SLICING_RUNS = 1
-
 # logging init:
 logger = logging.getLogger()
 logger.setLevel(20)
@@ -34,10 +24,6 @@ handler.setFormatter(formatter)
 logger.addHandler(handler)
 
 date_format = "%Y-%m-%d %H:%M:%S"
-
-# DONE: od Pelanka: pohrat si s filtrovanim pouzitelnejsich dat, evaulaciou
-# TODO: Na prezentaciu: popis dat, popis pouzitych metod, evaulacia - metodika, vysledky, vizualizacia
-# DONE: profiling - zryclit vyber dat userov, zvysit pocet userov
 
 
 class Evaluator:
@@ -151,7 +137,7 @@ class Evaluator:
         recall = self.recall(y_true, y_pred)
         return (1+(f**2))*(float(precision*recall)/((f**2*precision)+recall))
 
-    def predict(self, tested_recommender, tested_volume=None):
+    def predict(self, tested_recommender):
         logger.info("Starting testing - gathering recommender predictions")
 
         self.y_true = list()
@@ -160,16 +146,12 @@ class Evaluator:
         len_diff = 0
         delta_sum = 0
 
-        if tested_volume:
-            self.testing_frame = self.testing_frame[:tested_volume]
-            logger.info("Testing will be made on %s ratings" % tested_volume)
-
         for index, entry in self.testing_frame.iterrows():
             expected_score = entry["rating"]
             actual_score = tested_recommender.predict(entry["user"], entry["item"])
 
             # TODO: comment/uncomment for no output of matching
-            logger.info("expected - actual: %s - %s" % (expected_score, actual_score))
+            # logger.info("expected - actual: %s - %s" % (expected_score, actual_score))
 
             if actual_score is not None:
                 delta_sum += math.fabs(expected_score - actual_score)
@@ -187,7 +169,8 @@ class Evaluator:
     # expects initialized Recommender class containing fit and predict methods
     # evaluates the results of the Recommender using the selected method
     # implemeted methods: MAE, RMSE, PRECISION, RECALL, F1
-    def evaluate(self, recommender, pickled_train_filepath=None, pickled_test_filepath=None, all_data_filepath=None, tested_volume=None):
+    def evaluate(self, recommender, pickled_train_filepath=None, pickled_test_filepath=None, all_data_filepath=None,
+                 tested_samples=None, training_users=None):
         """
         main method for simple evaluation
         expects initialized Recommender class containing fit and predict methods
@@ -211,10 +194,20 @@ class Evaluator:
             self.load_train_test_split(pickled_train_filepath, pickled_test_filepath)
             logger.info("Loaded pickled train and test data frames")
 
+        if training_users:
+            logger.info("Volume of training users was limited to %s samples" % training_users)
+            training_users_keys = np.random.choice(self.training_frame["user"].unique(), training_users)
+            self.training_frame = self.training_frame[self.training_frame["user"].isin(training_users_keys)]
+            self.testing_frame = self.testing_frame[self.testing_frame["user"].isin(training_users_keys)]
+
+        if tested_samples:
+            logger.info("Volume of tested users was limited to %s samples" % tested_samples)
+            self.testing_frame = self.training_frame[:tested_samples]
+
         logger.info("Starting recommender fit")
         recommender.fit(self.training_frame)
         logger.info("Recommender has fit")
-        score = self.predict(recommender, tested_volume=tested_volume)
+        score = self.predict(recommender)
         logger.info("Recommender scores: %s" % score)
         return score
 

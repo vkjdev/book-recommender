@@ -1,8 +1,9 @@
-from evaluator2 import Evaluator
+from evaluatorClass import Evaluator
 
-from dummy_recommender import MeanRatingRecommender as Recommender
+# from dummy_recommender import MeanRatingRecommender as Recommender
 from distance_recommender import UserDistanceRecommender as Recommender
 # from doc2vec_recommender import Doc2VecRecommender as Recommender
+from similar_rating_book_recommender import SimilarRatingBookRecommender as Recommender
 
 # PICKLE_USER_RANGE = [50, 50]
 #
@@ -23,7 +24,8 @@ PICKLE_DATA = {"train_data": "/home/michal/Documents/Misc/recommenders/vcs/book-
 
 tested_recommender = Recommender()
 evaluator = Evaluator(pickle_boost=True)
-score = evaluator.evaluate(tested_recommender, pickled_train_filepath=PICKLE_DATA["train_data"], pickled_test_filepath=PICKLE_DATA["test_data"], tested_volume=TESTED_DATA_SIZE)
+score = evaluator.evaluate(tested_recommender, pickled_train_filepath=PICKLE_DATA["train_data"],
+                           pickled_test_filepath=PICKLE_DATA["test_data"], tested_samples=TESTED_DATA_SIZE)
 
 print("DONE")
 print("Score: %s" % score)
